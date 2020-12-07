@@ -7,7 +7,7 @@ type (
 	Property struct {
 		Name     string
 		Alias    []string
-		PropType reflect.Kind
-		Rules    []Rule
+		propKind reflect.Kind
+		rules    []Rule
 	}
 )

@@ -53,8 +53,8 @@ func (r *RegexRule) validate(i interface{}) (bool, string) {
 }
 
 func (r *RegexRule) rulevalidation(p Property) error {
-	if p.PropType != reflect.String {
-		err := fmt.Errorf("regex rule cannot be used with property %v. got type %v, need string", p.Name, p.PropType.String())
+	if p.propKind != reflect.String {
+		err := fmt.Errorf("regex rule cannot be used with property %v. got type %v, need string", p.Name, p.propKind.String())
 		return err
 	}
 	return nil
@@ -98,15 +98,11 @@ func (r *EnumRule) validate(i interface{}) (bool, string) {
 
 func (r *EnumRule) rulevalidation(p Property) error {
 
-	//Note: only checking the first element returned because
-	for key := range r.enumvalues {
-		enumType := reflect.TypeOf(key).Kind()
-		if enumType != p.PropType {
-			err := fmt.Errorf("enum type and prop type do not match. enum %v, prop type %v", enumType.String(), p.PropType.String())
-			return err
-		}
-		break
+	if r.enumKind != p.propKind {
+		err := fmt.Errorf("enum type and prop type do not match. enum %v, prop type %v", r.enumKind.String(), p.propKind.String())
+		return err
 	}
+
 	return nil
 }
 
