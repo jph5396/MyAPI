@@ -8,16 +8,14 @@ import (
 //Property represents a single property in a request body.
 type Property struct {
 	Name     string
-	Alias    []string
 	propKind reflect.Kind
 	rules    []Rule
 }
 
 //NewProperty creates a property with a blank rule set.
-func NewProperty(name string, alias []string, kind reflect.Kind) Property {
+func NewProperty(name string, kind reflect.Kind) Property {
 	return Property{
 		Name:  name,
-		Alias: alias,
 		rules: []Rule{},
 	}
 }
@@ -47,13 +45,6 @@ func (pg *PropertyGroup) AddProperties(props ...Property) error {
 	for _, prop := range props {
 		if _, present := pg.properties[prop.Name]; !present {
 			pg.properties[prop.Name] = prop
-			for _, alias := range prop.Alias {
-				if _, present := pg.properties[alias]; !present {
-					pg.properties[alias] = prop
-				} else {
-					return fmt.Errorf("duplicated alias %v", alias)
-				}
-			}
 		} else {
 			return fmt.Errorf("duplicated Prop name: %v", prop.Name)
 		}
