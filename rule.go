@@ -54,7 +54,7 @@ func (r *RegexRule) validate(i interface{}) (bool, string) {
 
 func (r *RegexRule) rulevalidation(p Property) error {
 	if p.propKind != reflect.String {
-		err := fmt.Errorf("regex rule cannot be used with property %v. got type %v, need string", p.Name, p.propKind.String())
+		err := fmt.Errorf("regex rule cannot be used with property. got type %v, need string", p.propKind.String())
 		return err
 	}
 	return nil
