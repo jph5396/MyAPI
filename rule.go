@@ -109,4 +109,5 @@ func (r *EnumRule) rulevalidation(p Property) error {
 //CustomRule a rule type that can be used for user defined rules.
 // see rule interface description for more information.
 type CustomRule struct {
+	//todo implement
 }
