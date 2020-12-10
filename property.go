@@ -8,7 +8,7 @@ import (
 //Property represents a single property in a request body.
 type Property struct {
 	Name     string
-	propKind reflect.Kind
+	propType Type
 	rules    []Rule
 }
 

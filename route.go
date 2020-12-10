@@ -29,7 +29,7 @@ func (r *Route) SetDescription(description string) {
 //AddPropertyGroup adds an entire propertygroup to the route properties
 // note: this will replace any current properties on the route.
 func (r *Route) AddPropertyGroup(pg PropertyGroup) {
-
+	r.props = pg
 }
 
 //AddProperty adds all provided properties to the route.

@@ -53,8 +53,8 @@ func (r *RegexRule) validate(i interface{}) (bool, string) {
 }
 
 func (r *RegexRule) rulevalidation(p Property) error {
-	if p.propKind != reflect.String {
-		err := fmt.Errorf("regex rule cannot be used with property. got type %v, need string", p.propKind.String())
+	if p.propType != String {
+		err := fmt.Errorf("regex rule cannot be used with property. got type %v, need string", p.propType.String())
 		return err
 	}
 	return nil
@@ -62,27 +62,27 @@ func (r *RegexRule) rulevalidation(p Property) error {
 
 //EnumRule checks to see if the property value is within a set of valid values.
 type EnumRule struct {
-	enumKind   reflect.Kind
+	enumType   Type
 	enumvalues map[interface{}]struct{}
 }
 
 //NewEnumRule checks to see if all members provided are the same type,
 // if so, it will return a valid EnumRule. if not, it will return
 // a blank rule and a error. type is inferred by checking the first member of the array.
-func NewEnumRule(members []interface{}) (EnumRule, error) {
+func NewEnumRule(members []interface{}, t Type) (EnumRule, error) {
 
-	enumKind := reflect.TypeOf(members[0]).Kind()
+	enumType := reflect.TypeOf(members[0])
 	enumvalues := make(map[interface{}]struct{})
 	var empty struct{}
 	for _, val := range members {
-		if reflect.TypeOf(val).Kind() != enumKind {
+		if reflect.TypeOf(val) != enumType {
 			err := fmt.Errorf("enum type mismatch")
 			return EnumRule{}, err
 		}
 		enumvalues[val] = empty
 	}
 	return EnumRule{
-		enumKind:   enumKind,
+		enumType:   enumType,
 		enumvalues: enumvalues,
 	}, nil
 }
@@ -98,8 +98,8 @@ func (r *EnumRule) validate(i interface{}) (bool, string) {
 
 func (r *EnumRule) rulevalidation(p Property) error {
 
-	if r.enumKind != p.propKind {
-		err := fmt.Errorf("enum type and prop type do not match. enum %v, prop type %v", r.enumKind.String(), p.propKind.String())
+	if r.enumType != p.propType {
+		err := fmt.Errorf("enum type and prop type do not match. enum %v, prop type %v", r.enumType.String(), p.propType.String())
 		return err
 	}
 
