@@ -1,7 +1,7 @@
 package myapi
 
-//SubRouter a grouping of routes. all routes will have a prefix
-// applied to them at 8
+//SubRouter a grouping of routes. all routes added to the subrouter
+// will be prefixed with the prefix string.
 type SubRouter struct {
 	prefix     string
 	routes     []Route

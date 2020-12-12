@@ -6,11 +6,11 @@ import "net/http"
 type Middleware struct {
 	name        string
 	description string
-	handler     http.Handler
+	handler     func(http.Handler) http.Handler
 }
 
 //NewMiddleware returns a new middleware with the name and handler provided.
-func NewMiddleware(name string, handler http.Handler) Middleware {
+func NewMiddleware(name string, handler func(http.Handler) http.Handler) Middleware {
 	return Middleware{name: name, handler: handler}
 }
 
