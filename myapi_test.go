@@ -7,10 +7,8 @@ import (
 
 func TestMyAPI(t *testing.T) {
 	testserver := buildtestserver()
-	err := testserver.StartServer()
-	if err != nil {
-		t.Error("server failed to start")
-	}
+	srv := testserver.StartTestServer()
+	defer srv.Close()
 }
 
 func buildtestserver() MyAPI {

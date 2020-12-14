@@ -2,6 +2,7 @@ package myapi
 
 import (
 	"net/http"
+	"net/http/httptest"
 
 	"github.com/dimfeld/httptreemux/v5"
 )
@@ -58,4 +59,10 @@ func (m *MyAPI) UseRoute(r Route) {
 //StartServer starts the server using the port and managed routers.
 func (m *MyAPI) StartServer() error {
 	return http.ListenAndServe(m.Port, m.managedRouter)
+}
+
+//StartTestServer starts the server using httptest.NewServer() instead of
+// http.ListenAndServe for testing purposes.
+func (m *MyAPI) StartTestServer() *httptest.Server {
+	return httptest.NewServer(m.managedRouter)
 }
