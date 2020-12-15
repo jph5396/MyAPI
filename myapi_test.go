@@ -67,7 +67,6 @@ func buildtestserver() MyAPI {
 	testserver := NewMyAPI("test", ":8080")
 	route := NewRoute("/plainroute", http.MethodGet, func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("plainroute"))
-		return
 	})
 	testserver.UseRoute(route)
 

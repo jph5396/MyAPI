@@ -15,16 +15,18 @@ type MyAPI struct {
 	globalmiddleware []Middleware
 	managedRouter    mux.Router
 	Port             string
+	routeProps       map[string]PropertyGroup
 }
 
 //NewMyAPI creates a new MyAPI instance.
 func NewMyAPI(name string, port string) MyAPI {
-	mux := mux.NewRouter()
-	return MyAPI{
-		Name:          name,
-		Port:          port,
-		managedRouter: *mux,
+	myapi := MyAPI{
+		Name: name,
+		Port: port,
 	}
+	mux := mux.NewRouter()
+	myapi.managedRouter = *mux
+	return myapi
 }
 
 //UseMiddleware applies the middleware provided to the router.
@@ -63,6 +65,37 @@ func (m *MyAPI) StartServer() error {
 
 //StartTestServer starts the server using httptest.NewServer() instead of
 // http.ListenAndServe for testing purposes.
-func (m *MyAPI) StartTestServer() *httptest.Server {
-	return httptest.NewServer(&m.managedRouter)
+func (m *MyAPI) StartTestServer() (*httptest.Server, error) {
+	return httptest.NewServer(&m.managedRouter), nil
+}
+
+//myapiMiddleware middleware function used to implement all type checking and rule
+// validation on endpoints.
+func (m *MyAPI) myapiMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path, err := mux.CurrentRoute(r).GetPathTemplate()
+
+		//err should only be nonnil when there isnt a matching route.
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte(http.StatusText(http.StatusNotFound)))
+			return
+		}
+		props, ok := m.routeProps[path]
+		if !ok {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+		}
+
+		//TODO: finish
+		next.ServeHTTP(w, r)
+	})
+}
+
+//build adds anything to myapi that is needed for it to run, but needs to be set
+//after all routes and middleware have been added.
+func (m *MyAPI) build() error {
+	//TODO: add code to fill routeProps
+	m.managedRouter.Use(m.myapiMiddleware)
+	return nil
 }

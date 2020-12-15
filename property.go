@@ -1,6 +1,7 @@
 package myapi
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 )
@@ -32,6 +33,26 @@ func (p *Property) AddRules(rules ...Rule) {
 			fmt.Printf("Could not add rules to Property %v. error: %v \n", p.Name, err.Error())
 		}
 	}
+}
+
+func (p *Property) validate(key string, value interface{}) error {
+	valueType := reflect.TypeOf(value)
+	//if value Type is a propertyGroup type,
+	if p.propType == Group {
+		return errors.New("PropGroup validation not yet implemented")
+	}
+
+	// make sure propType matches.
+	if valueType != p.propType {
+		return fmt.Errorf("%v: invalid type. got %v, want %v", key, valueType.String(), p.propType.String())
+	}
+	for _, rule := range p.rules {
+		ok, msg := rule.validate(value)
+		if !ok {
+			return fmt.Errorf("%v: %v", key, msg)
+		}
+	}
+	return nil
 }
 
 //PropertyGroup wrapper used to be sure property names are unique when applied to a route.
