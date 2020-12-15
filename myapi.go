@@ -1,6 +1,7 @@
 package myapi
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 
@@ -85,9 +86,19 @@ func (m *MyAPI) myapiMiddleware(next http.Handler) http.Handler {
 		if !ok {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+			return
 		}
 
-		//TODO: finish
+		var reqBody map[string]interface{}
+		err = json.NewDecoder(r.Body).Decode(&reqBody)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(http.StatusText(http.StatusBadRequest)))
+			return
+		}
+
+		props.validate(reqBody)
+
 		next.ServeHTTP(w, r)
 	})
 }

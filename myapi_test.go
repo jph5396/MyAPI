@@ -1,6 +1,8 @@
 package myapi
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -9,7 +11,10 @@ import (
 
 func TestMyAPI(t *testing.T) {
 	testserver := buildtestserver()
-	srv := testserver.StartTestServer()
+	srv, err := testserver.StartTestServer()
+	if err != nil {
+		t.Fatalf("test server could not start. reason: %v", err.Error())
+	}
 	defer srv.Close()
 
 	testplainroute := func() error {
@@ -18,6 +23,10 @@ func TestMyAPI(t *testing.T) {
 			return err
 		}
 		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return err
+		}
+		defer res.Body.Close()
 		if res.StatusCode != 200 {
 			return fmt.Errorf("wrong status code: got %v want %v", res.StatusCode, 200)
 		}
@@ -33,6 +42,10 @@ func TestMyAPI(t *testing.T) {
 			return err
 		}
 		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return err
+		}
+		defer res.Body.Close()
 		if res.StatusCode != 200 {
 			return fmt.Errorf("wrong status code: got %v want %v", res.StatusCode, 200)
 		}
@@ -42,12 +55,38 @@ func TestMyAPI(t *testing.T) {
 		return nil
 	}
 
+	testproproute := func() error {
+		reqbody, err := json.Marshal(map[string]string{
+			"Test": "Test",
+		})
+		if err != nil {
+			return errors.New("could not marshal json body for testproproute")
+		}
+
+		req, err := http.NewRequest(http.MethodPost, srv.URL+"/subroute/proptest", bytes.NewBuffer(reqbody))
+		if err != nil {
+			return err
+		}
+
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return err
+		}
+		defer res.Body.Close()
+		if res.StatusCode != 200 {
+			return fmt.Errorf("wrong status code: got %v want %v", res.StatusCode, 200)
+		}
+
+		return nil
+	}
+
 	var tests = []struct {
 		testname string
 		testfunc func() error
 	}{
 		{"hit plainroute", testplainroute},
 		{"hit subroute", testsubrouter},
+		{"hit route with prop", testproproute},
 	}
 
 	for _, test := range tests {
@@ -85,8 +124,20 @@ func buildtestserver() MyAPI {
 			next.ServeHTTP(w, r)
 		})
 	})
+
+	//create Properties and a route to test them on.
+	prop := NewProperty("Test", String)
+	propRouteTest := NewRoute("/proptest", http.MethodPost, func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("proptest"))
+	})
+
+	err := propRouteTest.AddProperty(prop)
+	if err != nil {
+		panic(err)
+	}
 	sub.UseMiddleware(submw)
 	sub.AddRoute(route)
+	sub.AddRoute(propRouteTest)
 	testserver.UseSubrouter(sub)
 
 	return testserver

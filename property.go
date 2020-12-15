@@ -14,10 +14,11 @@ type Property struct {
 }
 
 //NewProperty creates a property with a blank rule set.
-func NewProperty(name string, kind reflect.Kind) Property {
+func NewProperty(name string, typ Type) Property {
 	return Property{
-		Name:  name,
-		rules: []Rule{},
+		Name:     name,
+		propType: typ,
+		rules:    []Rule{},
 	}
 }
 
@@ -70,5 +71,20 @@ func (pg *PropertyGroup) AddProperties(props ...Property) error {
 			return fmt.Errorf("duplicated Prop name: %v", prop.Name)
 		}
 	}
+	return nil
+}
+
+func (pg *PropertyGroup) validate(body map[string]interface{}) error {
+	for key, val := range body {
+		if property, ok := pg.properties[key]; ok {
+			err := property.validate(key, val)
+			if err != nil {
+				return err
+			}
+		} else {
+			return fmt.Errorf("property %v is not valid", key)
+		}
+	}
+
 	return nil
 }

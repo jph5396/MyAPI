@@ -14,10 +14,14 @@ type Route struct {
 //NewRoute takes in all neccesay parts of a route: path method and handler function.
 // other fields can be set via other functions.
 func NewRoute(path, method string, Handler http.HandlerFunc) Route {
+	pg := PropertyGroup{
+		properties: make(map[string]Property),
+	}
 	return Route{
 		path:    path,
 		method:  method,
 		handler: Handler,
+		props:   pg,
 	}
 }
 
