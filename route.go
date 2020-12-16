@@ -37,7 +37,7 @@ func (r *Route) AddPropertyGroup(pg PropertyGroup) {
 }
 
 //AddProperty adds all provided properties to the route.
-// this will throw an error is a property name is duplicated.
+// this will throw an error if a property name is duplicated.
 func (r *Route) AddProperty(p ...Property) error {
 	return r.props.AddProperties(p...)
 }

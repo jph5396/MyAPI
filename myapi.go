@@ -2,6 +2,8 @@ package myapi
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 
@@ -22,8 +24,9 @@ type MyAPI struct {
 //NewMyAPI creates a new MyAPI instance.
 func NewMyAPI(name string, port string) MyAPI {
 	myapi := MyAPI{
-		Name: name,
-		Port: port,
+		Name:       name,
+		Port:       port,
+		routeProps: make(map[string]PropertyGroup),
 	}
 	mux := mux.NewRouter()
 	myapi.managedRouter = *mux
@@ -38,35 +41,51 @@ func (m *MyAPI) UseMiddleware(mw Middleware) {
 }
 
 //UseSubrouter applies a SubRouter to the api.
-func (m *MyAPI) UseSubrouter(sr SubRouter) {
+func (m *MyAPI) UseSubrouter(sr SubRouter) error {
 
 	sub := m.managedRouter.PathPrefix(sr.prefix).Subrouter()
 
 	// add all routes to the subrouter.
 	for _, route := range sr.routes {
-		sub.Handle(route.path, route.handler).Methods(route.method)
+		if _, present := m.routeProps[sr.prefix+route.path]; !present {
+			m.routeProps[sr.prefix+route.path] = route.props
+			sub.Handle(route.path, route.handler).Methods(route.method)
+		} else {
+			return fmt.Errorf("duplicated route: %v", sr.prefix+route.path)
+		}
+
 	}
 	//apply subrouters middleware.
 	for _, mw := range sr.middleware {
 		sub.Use(mw.handler)
 	}
 	m.subrouters = append(m.subrouters, sr)
+	return nil
 }
 
 //UseRoute applies an individual route to the api that is
 // not part of any subrouter.
-func (m *MyAPI) UseRoute(r Route) {
-	m.managedRouter.Handle(r.path, r.handler).Methods(r.method)
+func (m *MyAPI) UseRoute(r Route) error {
+
+	if _, present := m.routeProps[r.path]; !present {
+		m.routeProps[r.path] = r.props
+		m.managedRouter.Handle(r.path, r.handler).Methods(r.method)
+		return nil
+	}
+	return fmt.Errorf("duplicated route: %v", r.path)
+
 }
 
 //StartServer starts the server using the port and managed routers.
 func (m *MyAPI) StartServer() error {
+	m.build()
 	return http.ListenAndServe(m.Port, &m.managedRouter)
 }
 
 //StartTestServer starts the server using httptest.NewServer() instead of
 // http.ListenAndServe for testing purposes.
 func (m *MyAPI) StartTestServer() (*httptest.Server, error) {
+	m.build()
 	return httptest.NewServer(&m.managedRouter), nil
 }
 
@@ -91,7 +110,8 @@ func (m *MyAPI) myapiMiddleware(next http.Handler) http.Handler {
 
 		var reqBody map[string]interface{}
 		err = json.NewDecoder(r.Body).Decode(&reqBody)
-		if err != nil {
+		if err != nil && err != io.EOF {
+			fmt.Println(err.Error())
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte(http.StatusText(http.StatusBadRequest)))
 			return
@@ -106,7 +126,6 @@ func (m *MyAPI) myapiMiddleware(next http.Handler) http.Handler {
 //build adds anything to myapi that is needed for it to run, but needs to be set
 //after all routes and middleware have been added.
 func (m *MyAPI) build() error {
-	//TODO: add code to fill routeProps
 	m.managedRouter.Use(m.myapiMiddleware)
 	return nil
 }

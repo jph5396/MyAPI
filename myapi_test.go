@@ -107,7 +107,10 @@ func buildtestserver() MyAPI {
 	route := NewRoute("/plainroute", http.MethodGet, func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("plainroute"))
 	})
-	testserver.UseRoute(route)
+	err := testserver.UseRoute(route)
+	if err != nil {
+		panic(err)
+	}
 
 	globalmw := NewMiddleware("testglobalmw", func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -131,14 +134,17 @@ func buildtestserver() MyAPI {
 		w.Write([]byte("proptest"))
 	})
 
-	err := propRouteTest.AddProperty(prop)
+	err = propRouteTest.AddProperty(prop)
 	if err != nil {
 		panic(err)
 	}
 	sub.UseMiddleware(submw)
 	sub.AddRoute(route)
 	sub.AddRoute(propRouteTest)
-	testserver.UseSubrouter(sub)
+	err = testserver.UseSubrouter(sub)
+	if err != nil {
+		panic(err)
+	}
 
 	return testserver
 }
