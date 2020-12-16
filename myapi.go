@@ -117,7 +117,11 @@ func (m *MyAPI) myapiMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		props.validate(reqBody)
+		err = props.validate(reqBody)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(err.Error()))
+		}
 
 		next.ServeHTTP(w, r)
 	})
