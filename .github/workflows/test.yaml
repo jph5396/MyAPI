@@ -12,14 +12,12 @@ jobs:
       uses: actions/setup-go@v2
       with: 
         go-version: '^1.15.6'
-    - name: setup gotestsum 
-      uses: autero1/action-gotestsum@v0.1.0
-      with: 
-        gotestsum_version: '0.6.0'
-    - name: run gotestsum 
-      run: gotestsum --junitfile tests.xml
+    - name: download dependencies 
+      run: go mod download
+    - name: run go tests 
+      run: go test -coverprofile=coverage.txt -covermode=atomic
     - name: upload to codecov
       uses: codecov/codecov-action@v1
       with:
-        file: ./tests.xml
+        file: ./coverage.txt
         verbose: true 
