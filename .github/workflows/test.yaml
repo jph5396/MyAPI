@@ -15,7 +15,7 @@ jobs:
     - name: setup gotestsum 
       uses: autero1/action-gotestsum@v0.1.0
       with: 
-        gotestsum_version: '^0.6.0'
+        gotestsum_version: '0.6.0'
     - name: run gotestsum 
       run: gotestsum --junitfile tests.xml
     - name: upload to codecov
