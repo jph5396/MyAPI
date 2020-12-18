@@ -41,15 +41,16 @@ func (p Property) getType() Type {
 //AddRules will take the rules provided and add them to the Property,
 // checking if they are valid first. If not, it will print a msg stating
 // it has been ignored.
-func (p *Property) AddRules(rules ...Rule) {
+func (p *Property) AddRules(rules ...Rule) error {
 	for _, r := range rules {
 		err := r.rulevalidation(p)
 		if err == nil {
 			p.rules = append(p.rules, r)
 		} else {
-			fmt.Printf("Could not add rules to Property %v. error: %v \n", p.Name, err.Error())
+			return fmt.Errorf("could not add rules to Property %v. error: %v", p.Name, err.Error())
 		}
 	}
+	return nil
 }
 
 func (p Property) validate(key string, value interface{}) error {

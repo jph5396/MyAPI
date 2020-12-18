@@ -39,7 +39,7 @@ func NewRegexRule(str string) (RegexRule, error) {
 	}, nil
 }
 
-func (r *RegexRule) validate(i interface{}) (bool, string) {
+func (r RegexRule) validate(i interface{}) (bool, string) {
 
 	value := i.(string)
 	//Note: we ignore the error because it should have already been
@@ -52,7 +52,7 @@ func (r *RegexRule) validate(i interface{}) (bool, string) {
 	return false, msg
 }
 
-func (r *RegexRule) rulevalidation(p Props) error {
+func (r RegexRule) rulevalidation(p Props) error {
 	if p.getType() != String {
 		err := fmt.Errorf("regex rule cannot be used with property. got type %v, need string", p.getType().String())
 		return err
@@ -71,7 +71,7 @@ type EnumRule struct {
 // a blank rule and a error. type is inferred by checking the first member of the array.
 func NewEnumRule(members []interface{}, t Type) (EnumRule, error) {
 
-	enumType := reflect.TypeOf(members[0])
+	enumType := t
 	enumvalues := make(map[interface{}]struct{})
 	var empty struct{}
 	for _, val := range members {
@@ -87,7 +87,7 @@ func NewEnumRule(members []interface{}, t Type) (EnumRule, error) {
 	}, nil
 }
 
-func (r *EnumRule) validate(i interface{}) (bool, string) {
+func (r EnumRule) validate(i interface{}) (bool, string) {
 	if _, ok := r.enumvalues[i]; ok {
 		return true, ""
 	}
@@ -96,7 +96,7 @@ func (r *EnumRule) validate(i interface{}) (bool, string) {
 	return false, msg
 }
 
-func (r *EnumRule) rulevalidation(p Props) error {
+func (r EnumRule) rulevalidation(p Props) error {
 
 	if r.enumType != p.getType() {
 		err := fmt.Errorf("enum type and prop type do not match. enum %v, prop type %v", r.enumType.String(), p.getType().String())
