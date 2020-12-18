@@ -15,7 +15,7 @@ type Route struct {
 // other fields can be set via other functions.
 func NewRoute(path, method string, Handler http.HandlerFunc) Route {
 	pg := PropertyGroup{
-		properties: make(map[string]Property),
+		properties: make(map[string]Props),
 	}
 	return Route{
 		path:    path,
@@ -38,6 +38,6 @@ func (r *Route) AddPropertyGroup(pg PropertyGroup) {
 
 //AddProperty adds all provided properties to the route.
 // this will throw an error if a property name is duplicated.
-func (r *Route) AddProperty(p ...Property) error {
+func (r *Route) AddProperty(p ...Props) error {
 	return r.props.AddProperties(p...)
 }

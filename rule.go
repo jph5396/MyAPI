@@ -17,7 +17,7 @@ type Rule interface {
 	validate(interface{}) (bool, string)
 
 	//rulevalidation should check to be sure the rule can be applied to given property.
-	rulevalidation(Property) error
+	rulevalidation(Props) error
 }
 
 //RegexRule checks to see if the  propety value of a property matches the provided regex string.
@@ -52,9 +52,9 @@ func (r *RegexRule) validate(i interface{}) (bool, string) {
 	return false, msg
 }
 
-func (r *RegexRule) rulevalidation(p Property) error {
-	if p.propType != String {
-		err := fmt.Errorf("regex rule cannot be used with property. got type %v, need string", p.propType.String())
+func (r *RegexRule) rulevalidation(p Props) error {
+	if p.getType() != String {
+		err := fmt.Errorf("regex rule cannot be used with property. got type %v, need string", p.getType().String())
 		return err
 	}
 	return nil
@@ -96,10 +96,10 @@ func (r *EnumRule) validate(i interface{}) (bool, string) {
 	return false, msg
 }
 
-func (r *EnumRule) rulevalidation(p Property) error {
+func (r *EnumRule) rulevalidation(p Props) error {
 
-	if r.enumType != p.propType {
-		err := fmt.Errorf("enum type and prop type do not match. enum %v, prop type %v", r.enumType.String(), p.propType.String())
+	if r.enumType != p.getType() {
+		err := fmt.Errorf("enum type and prop type do not match. enum %v, prop type %v", r.enumType.String(), p.getType().String())
 		return err
 	}
 
