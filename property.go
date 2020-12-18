@@ -148,9 +148,7 @@ func (o ObjectProperty) validate(key string, val interface{}) error {
 					return fmt.Errorf("%v.%v", key, err.Error())
 				}
 			}
-
 		}
-
 	} else {
 		return fmt.Errorf("%v not a valid type. got %v want Object", key, reflect.TypeOf(val).Kind().String())
 	}
