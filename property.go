@@ -148,6 +148,8 @@ func (o ObjectProperty) validate(key string, val interface{}) error {
 				if err != nil {
 					return fmt.Errorf("%v.%v", key, err.Error())
 				}
+			} else {
+				return fmt.Errorf("%v is not a valid prop", k)
 			}
 		}
 	} else {

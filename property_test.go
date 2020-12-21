@@ -78,3 +78,41 @@ func TestNestedProperties(t *testing.T) {
 	}
 
 }
+
+func TestArrayOfProperties(t *testing.T) {
+	prop1 := NewProperty("Name", String)
+	prop2 := NewProperty("ID", Int)
+	prop3 := NewProperty("score", Float)
+
+	propgroup := PropertyGroup{
+		properties: make(map[string]Props),
+	}
+	propgroup.AddProperties(prop1, prop2, prop3)
+	objProp := NewObjectProperty("Users")
+	objProp.UsePropertyGroup(propgroup)
+
+	var test = map[string]interface{}{
+		"Users": []map[string]interface{}{
+			{
+				"Name":  "Jimbo",
+				"ID":    43,
+				"score": 23.45,
+			},
+			{
+				"Name":  "Steven",
+				"ID":    22,
+				"score": 223.45,
+			},
+			{
+				"Name":  "Paul",
+				"ID":    11,
+				"score": 2.45,
+			},
+		},
+	}
+
+	err := objProp.validate("list", test["Users"])
+	if err != nil {
+		t.Errorf("Wanted nil got %v", err.Error())
+	}
+}
