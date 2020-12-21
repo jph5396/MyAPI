@@ -1,7 +1,6 @@
 package myapi
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -56,11 +55,6 @@ func (p *Property) AddRules(rules ...Rule) error {
 
 func (p Property) validate(key string, value interface{}) error {
 	valueType := reflect.TypeOf(value)
-	//if value Type is a propertyGroup type,
-	if p.propType == Group {
-		return errors.New("PropGroup validation not yet implemented")
-	}
-
 	// make sure propType matches.
 	if valueType != p.propType {
 		return fmt.Errorf("%v: invalid type. got %v, want %v", key, valueType.String(), p.propType.String())
