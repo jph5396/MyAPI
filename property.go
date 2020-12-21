@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 )
 
 //Props the interface that should represent a single property in a json object.
@@ -112,6 +113,7 @@ func (pg *PropertyGroup) validateGroup(body map[string]interface{}) error {
 type ObjectProperty struct {
 	Name     string
 	propType Type
+	slice    bool
 	group    PropertyGroup
 }
 
@@ -123,11 +125,11 @@ func (o ObjectProperty) getType() Type {
 	return o.propType
 }
 
-//NewObjectProperty creates a new Object Property with the name and an empty
-//PropertyGroup
-func NewObjectProperty(name string) ObjectProperty {
+//NewObjectProperty creates a new Object Property with the name provided and sets the slice
+func NewObjectProperty(name string, slice bool) ObjectProperty {
 	return ObjectProperty{
 		Name:     name,
+		slice:    slice,
 		propType: Group,
 	}
 }
@@ -138,12 +140,32 @@ func (o *ObjectProperty) UsePropertyGroup(pg PropertyGroup) {
 }
 
 func (o ObjectProperty) validate(key string, val interface{}) error {
+	if o.slice && reflect.TypeOf(val).Kind() == reflect.Slice {
+		reflectVal := reflect.ValueOf(val)
+		for i := 0; i < reflectVal.Len(); i++ {
+			err := objectvalidator(strconv.Itoa(i), reflectVal.Index(i).Interface(), o.group.properties)
+			if err != nil {
+				return fmt.Errorf("%v.%v", key, err.Error())
+			}
+		}
+	} else {
+		err := objectvalidator(key, val, o.group.properties)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// function used by objectProperty.validate to validate a value. It has been
+// written here so it can be used in both standard and array instances.
+func objectvalidator(key string, val interface{}, props map[string]Props) error {
 	if reflect.TypeOf(val).Kind() == reflect.Map {
 		mapIter := reflect.ValueOf(val).MapRange()
 		for mapIter.Next() {
 			k := mapIter.Key().String()
 			v := mapIter.Value().Interface()
-			if prop, ok := o.group.properties[k]; ok {
+			if prop, ok := props[k]; ok {
 				err := prop.validate(k, v)
 				if err != nil {
 					return fmt.Errorf("%v.%v", key, err.Error())

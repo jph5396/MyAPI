@@ -14,7 +14,7 @@ func TestComplextProperty(t *testing.T) {
 		properties: make(map[string]Props),
 	}
 	propgroup.AddProperties(prop1, prop2, prop3)
-	objProp := NewObjectProperty("User")
+	objProp := NewObjectProperty("User", false)
 	objProp.UsePropertyGroup(propgroup)
 
 	var test = map[string]interface{}{
@@ -51,7 +51,7 @@ func TestNestedProperties(t *testing.T) {
 		properties: make(map[string]Props),
 	}
 	propgroup.AddProperties(prop1, prop2, prop3)
-	objProp := NewObjectProperty("User")
+	objProp := NewObjectProperty("User", false)
 	objProp.UsePropertyGroup(propgroup)
 
 	computer := NewProperty("computer", String)
@@ -60,7 +60,7 @@ func TestNestedProperties(t *testing.T) {
 		properties: make(map[string]Props),
 	}
 	supergroup.AddProperties(computer, status, objProp)
-	superObjProp := NewObjectProperty("PCID")
+	superObjProp := NewObjectProperty("PCID", false)
 	superObjProp.UsePropertyGroup(supergroup)
 	var test = map[string]interface{}{
 		"computer": "testPC",
@@ -88,7 +88,7 @@ func TestArrayOfProperties(t *testing.T) {
 		properties: make(map[string]Props),
 	}
 	propgroup.AddProperties(prop1, prop2, prop3)
-	objProp := NewObjectProperty("Users")
+	objProp := NewObjectProperty("Users", true)
 	objProp.UsePropertyGroup(propgroup)
 
 	var test = map[string]interface{}{
