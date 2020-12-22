@@ -121,6 +121,7 @@ func (m *MyAPI) myapiMiddleware(next http.Handler) http.Handler {
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte(err.Error()))
+			return
 		}
 
 		next.ServeHTTP(w, r)
