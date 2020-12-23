@@ -10,6 +10,7 @@ import (
 // implementing a rule type all implemented rules can assume that the provided value
 // is already an appropriate type, because the value will have been type checked before
 // and invalid ones will not make it to the rule.
+// NOTE: rules cannot be applied to the Object Property Type.
 type Rule interface {
 	//validate the function used to define if an input is valid or not.
 	// if an input is not valid, the function should return false, and a string
@@ -106,8 +107,34 @@ func (r EnumRule) rulevalidation(p Props) error {
 	return nil
 }
 
-//CustomRule a rule type that can be used for user defined rules.
-// see rule interface description for more information.
+//CustomRule a rule type that allows users to define their own rule.
 type CustomRule struct {
-	//todo implement
+	name        string
+	description string
+	t           Type
+	validation  func(interface{}) (bool, string)
+}
+
+//NewCustomRule creates a new custom rule that can be applied to properties.
+func NewCustomRule(n string, typ Type, v func(interface{}) (bool, string)) CustomRule {
+	return CustomRule{
+		name:       n,
+		t:          typ,
+		validation: v,
+	}
+}
+func (cr CustomRule) validate(i interface{}) (bool, string) {
+	return cr.validation(i)
+}
+
+//SetDescription sets the rules description.
+func (cr *CustomRule) SetDescription(desc string) {
+	cr.description = desc
+}
+
+func (cr CustomRule) rulevalidation(p Props) error {
+	if cr.t != p.getType() {
+		return fmt.Errorf(" rule %v cannot be applied to prop %v with type %v", cr.name, p.getName(), p.getType().String())
+	}
+	return nil
 }

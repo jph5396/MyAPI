@@ -96,3 +96,44 @@ func TestEnumRule(t *testing.T) {
 		}
 	})
 }
+
+func TestCustomRule(t *testing.T) {
+	prop := NewProperty("test", Int)
+	stringRule := NewCustomRule("StringRule", String, func(i interface{}) (bool, string) {
+		val, ok := i.(string)
+		if val == "test" && ok {
+			return true, ""
+		}
+		return false, "rule could not be validated."
+	})
+
+	intRule := NewCustomRule("IntRule", Int, func(i interface{}) (bool, string) {
+		val, ok := i.(int)
+		if val < 10 && ok {
+			return true, ""
+		}
+		return false, "could not validate."
+	})
+	intRule.SetDescription("should be less than 10")
+
+	t.Run("Apply custom rule to prop", func(t *testing.T) {
+		err := prop.AddRules(intRule)
+		if err != nil {
+			t.Errorf("wanted nil got %v", err.Error())
+		}
+	})
+
+	t.Run("Fail to apply rule", func(t *testing.T) {
+		err := prop.AddRules(stringRule)
+		if err == nil {
+			t.Errorf("wanted error got nil")
+		}
+	})
+
+	t.Run("pass validation", func(t *testing.T) {
+		pass, msg := intRule.validate(1)
+		if !pass {
+			t.Errorf("test failed int validation did not pass: %v", msg)
+		}
+	})
+}
