@@ -73,6 +73,11 @@ type PropertyGroup struct {
 	properties map[string]Props
 }
 
+//NewPropertyGroup creates a PropertyGroup with no properties.
+func NewPropertyGroup() PropertyGroup {
+	return PropertyGroup{properties: make(map[string]Props)}
+}
+
 //AddProperties attempts to add properties to PropertyGroup. It will throw an error if any Properties have
 // conflicting names or aliases.
 func (pg *PropertyGroup) AddProperties(props ...Props) error {
