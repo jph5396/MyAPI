@@ -6,14 +6,14 @@ import "net/http"
 type Route struct {
 	path        string
 	description string
-	method      string
+	method      []string
 	handler     http.HandlerFunc
 	props       PropertyGroup
 }
 
 //NewRoute takes in all neccesay parts of a route: path method and handler function.
 // other fields can be set via other functions.
-func NewRoute(path, method string, Handler http.HandlerFunc) Route {
+func NewRoute(path string, Handler http.HandlerFunc, method ...string) Route {
 	pg := PropertyGroup{
 		properties: make(map[string]Props),
 	}

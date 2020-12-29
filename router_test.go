@@ -9,10 +9,10 @@ import (
 func TestRouter(t *testing.T) {
 	testrouter := NewSubRouter("/v1")
 
-	route := NewRoute("/test", http.MethodPost,
+	route := NewRoute("/test",
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("hello")
-		}))
+		}), http.MethodPost)
 	testrouter.AddRoute(route)
 
 	if len(testrouter.routes) != 1 {
