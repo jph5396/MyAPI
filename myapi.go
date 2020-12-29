@@ -16,20 +16,22 @@ type MyAPI struct {
 	subrouters       []SubRouter
 	Routes           []Route
 	globalmiddleware []Middleware
-	managedRouter    mux.Router
+	managedRouter    *mux.Router
 	Port             string
+	cors             bool
 	routeProps       map[string]PropertyGroup
 }
 
 //NewMyAPI creates a new MyAPI instance.
-func NewMyAPI(name string, port string) MyAPI {
+func NewMyAPI(name string, port string, cors bool) MyAPI {
 	myapi := MyAPI{
 		Name:       name,
 		Port:       port,
+		cors:       cors,
 		routeProps: make(map[string]PropertyGroup),
 	}
-	mux := mux.NewRouter()
-	myapi.managedRouter = *mux
+	r := mux.NewRouter()
+	myapi.managedRouter = r
 	return myapi
 }
 
@@ -59,6 +61,9 @@ func (m *MyAPI) UseSubrouter(sr SubRouter) error {
 	for _, mw := range sr.middleware {
 		sub.Use(mw.handler)
 	}
+	if m.cors {
+		sub.Use(mux.CORSMethodMiddleware(sub))
+	}
 	m.subrouters = append(m.subrouters, sr)
 	return nil
 }
@@ -79,14 +84,14 @@ func (m *MyAPI) UseRoute(r Route) error {
 //StartServer starts the server using the port and managed routers.
 func (m *MyAPI) StartServer() error {
 	m.build()
-	return http.ListenAndServe(m.Port, &m.managedRouter)
+	return http.ListenAndServe(m.Port, m.managedRouter)
 }
 
 //StartTestServer starts the server using httptest.NewServer() instead of
 // http.ListenAndServe for testing purposes.
 func (m *MyAPI) StartTestServer() (*httptest.Server, error) {
 	m.build()
-	return httptest.NewServer(&m.managedRouter), nil
+	return httptest.NewServer(m.managedRouter), nil
 }
 
 //myapiMiddleware middleware function used to implement all type checking and rule
@@ -131,6 +136,9 @@ func (m *MyAPI) myapiMiddleware(next http.Handler) http.Handler {
 //build adds anything to myapi that is needed for it to run, but needs to be set
 //after all routes and middleware have been added.
 func (m *MyAPI) build() error {
+	if m.cors {
+		m.managedRouter.Use(mux.CORSMethodMiddleware(m.managedRouter))
+	}
 	m.managedRouter.Use(m.myapiMiddleware)
 	return nil
 }

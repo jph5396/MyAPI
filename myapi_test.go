@@ -77,6 +77,10 @@ func TestMyAPI(t *testing.T) {
 			return fmt.Errorf("wrong status code: got %v want %v", res.StatusCode, 200)
 		}
 
+		if head := res.Header.Get("Access-Control-Allow-Methods"); head == "" {
+			return errors.New("cors fail: Access-Control-Allow-Methods header not set")
+		}
+
 		return nil
 	}
 
@@ -103,10 +107,10 @@ func returnnil() error {
 }
 func buildtestserver() MyAPI {
 
-	testserver := NewMyAPI("test", ":8080")
+	testserver := NewMyAPI("test", ":8080", true)
 	route := NewRoute("/plainroute", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("plainroute"))
-	}, http.MethodGet)
+	}, http.MethodGet, http.MethodOptions)
 	err := testserver.UseRoute(route)
 	if err != nil {
 		panic(err)
@@ -132,7 +136,7 @@ func buildtestserver() MyAPI {
 	prop := NewProperty("Test", String)
 	propRouteTest := NewRoute("/proptest", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("proptest"))
-	}, http.MethodPost)
+	}, http.MethodPost, http.MethodOptions)
 
 	err = propRouteTest.AddProperty(prop)
 	if err != nil {
