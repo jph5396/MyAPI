@@ -49,7 +49,7 @@ func (m *MyAPI) UseSubrouter(sr SubRouter) error {
 	for _, route := range sr.routes {
 		if _, present := m.routeProps[sr.prefix+route.path]; !present {
 			m.routeProps[sr.prefix+route.path] = route.props
-			sub.Handle(route.path, route.handler).Methods(route.method)
+			sub.Handle(route.path, route.handler).Methods(route.method...)
 		} else {
 			return fmt.Errorf("duplicated route: %v", sr.prefix+route.path)
 		}
@@ -69,7 +69,7 @@ func (m *MyAPI) UseRoute(r Route) error {
 
 	if _, present := m.routeProps[r.path]; !present {
 		m.routeProps[r.path] = r.props
-		m.managedRouter.Handle(r.path, r.handler).Methods(r.method)
+		m.managedRouter.Handle(r.path, r.handler).Methods(r.method...)
 		return nil
 	}
 	return fmt.Errorf("duplicated route: %v", r.path)

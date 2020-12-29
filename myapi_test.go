@@ -104,9 +104,9 @@ func returnnil() error {
 func buildtestserver() MyAPI {
 
 	testserver := NewMyAPI("test", ":8080")
-	route := NewRoute("/plainroute", http.MethodGet, func(w http.ResponseWriter, r *http.Request) {
+	route := NewRoute("/plainroute", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("plainroute"))
-	})
+	}, http.MethodGet)
 	err := testserver.UseRoute(route)
 	if err != nil {
 		panic(err)
@@ -130,9 +130,9 @@ func buildtestserver() MyAPI {
 
 	//create Properties and a route to test them on.
 	prop := NewProperty("Test", String)
-	propRouteTest := NewRoute("/proptest", http.MethodPost, func(w http.ResponseWriter, r *http.Request) {
+	propRouteTest := NewRoute("/proptest", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("proptest"))
-	})
+	}, http.MethodPost)
 
 	err = propRouteTest.AddProperty(prop)
 	if err != nil {
