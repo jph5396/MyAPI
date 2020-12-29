@@ -4,6 +4,51 @@ import (
 	"testing"
 )
 
+func TestProperty(t *testing.T) {
+	prop1 := NewProperty("Name", String)
+	prop2 := NewProperty("ID", Int)
+
+	//basic test.
+	err := prop1.validate("test", "test")
+	if err != nil {
+		t.Errorf("got %v wanted nil", err.Error())
+	}
+
+	// make sure int validation will still return an err
+	// when a string is passed.
+	err = prop2.validate("int test", "test")
+	if err == nil {
+		t.Error("wanted error got nil")
+	}
+
+	//confirm a float64 can be passed and verified as int.
+	err = prop2.validate("intasfloat", float64(202001))
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	enumvals := []interface{}{1, 2, 3}
+	//test rule on prop.
+	rule, err := NewEnumRule(enumvals, Int)
+	if err != nil {
+		t.Errorf("could not build rule for testing. err: %v", err.Error())
+	}
+	err = prop2.AddRules(rule)
+	if err != nil {
+		t.Errorf("could not place rule on prop. %v", err.Error())
+	}
+
+	err = prop2.validate("int", 1)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	err = prop2.validate("int fail ", 12)
+	if err == nil {
+		t.Errorf("got nil wanted error")
+	}
+}
+
 func TestComplextProperty(t *testing.T) {
 	// build properties.
 	prop1 := NewProperty("Name", String)

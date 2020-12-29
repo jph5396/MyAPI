@@ -55,8 +55,15 @@ func (p *Property) AddRules(rules ...Rule) error {
 
 func (p Property) validate(key string, value interface{}) error {
 	valueType := reflect.TypeOf(value)
-	// make sure propType matches.
-	if valueType != p.propType {
+
+	//When Json is decoded in go, all JSON numbers are converted to float64 types.
+	// this means we need to handle integer checking differently.
+	if p.propType == Int {
+		if !valueType.ConvertibleTo(Int) {
+			return fmt.Errorf("%v: invalid type. got %v, want %v", key, valueType.String(), p.propType.String())
+		}
+
+	} else if valueType != p.propType {
 		return fmt.Errorf("%v: invalid type. got %v, want %v", key, valueType.String(), p.propType.String())
 	}
 	for _, rule := range p.rules {
