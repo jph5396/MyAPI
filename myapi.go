@@ -1,9 +1,11 @@
 package myapi
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 
@@ -112,7 +114,6 @@ func (m *MyAPI) myapiMiddleware(next http.Handler) http.Handler {
 			w.Write([]byte(http.StatusText(http.StatusInternalServerError)))
 			return
 		}
-
 		var reqBody map[string]interface{}
 		err = json.NewDecoder(r.Body).Decode(&reqBody)
 		if err != nil && err != io.EOF {
@@ -128,6 +129,10 @@ func (m *MyAPI) myapiMiddleware(next http.Handler) http.Handler {
 			w.Write([]byte(err.Error()))
 			return
 		}
+
+		//ignoring the error because this point could not be reached if reqBody was not valid json.
+		bodyBytes, _ := json.Marshal(reqBody)
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
 		next.ServeHTTP(w, r)
 	})

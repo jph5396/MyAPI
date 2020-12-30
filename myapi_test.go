@@ -134,7 +134,16 @@ func buildtestserver() MyAPI {
 
 	//create Properties and a route to test them on.
 	prop := NewProperty("Test", String)
+
 	propRouteTest := NewRoute("/proptest", func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		//try to read from body to be sure it can still be accessed after.
+		var b map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&b)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(err.Error()))
+		}
 		w.Write([]byte("proptest"))
 	}, http.MethodPost, http.MethodOptions)
 
