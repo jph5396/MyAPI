@@ -34,6 +34,9 @@ func NewMyAPI(name string, port string, cors bool) MyAPI {
 	}
 	r := mux.NewRouter()
 	myapi.managedRouter = r
+	if myapi.cors {
+		myapi.managedRouter.Use(mux.CORSMethodMiddleware(myapi.managedRouter))
+	}
 	return myapi
 }
 
@@ -60,12 +63,13 @@ func (m *MyAPI) UseSubrouter(sr SubRouter) error {
 
 	}
 	//apply subrouters middleware.
-	for _, mw := range sr.middleware {
-		sub.Use(mw.handler)
-	}
 	if m.cors {
 		sub.Use(mux.CORSMethodMiddleware(sub))
 	}
+	for _, mw := range sr.middleware {
+		sub.Use(mw.handler)
+	}
+
 	m.subrouters = append(m.subrouters, sr)
 	return nil
 }
@@ -141,9 +145,7 @@ func (m *MyAPI) myapiMiddleware(next http.Handler) http.Handler {
 //build adds anything to myapi that is needed for it to run, but needs to be set
 //after all routes and middleware have been added.
 func (m *MyAPI) build() error {
-	if m.cors {
-		m.managedRouter.Use(mux.CORSMethodMiddleware(m.managedRouter))
-	}
+
 	m.managedRouter.Use(m.myapiMiddleware)
 	return nil
 }
